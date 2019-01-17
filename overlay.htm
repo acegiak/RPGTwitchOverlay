@@ -1,0 +1,193 @@
+<html>
+<head>
+<title>Actual Play</title>
+<style type="text/css">
+ @import url('https://fonts.googleapis.com/css?family=Montserrat');
+ body{
+    font-family: 'Montserrat', sans-serif;
+    margin-left:auto;
+    margin-right:auto;
+    position:relative;
+    text-align:center;
+    background-size:100%;
+    padding-left:2.5%;
+    padding-right:2.5%;
+ }
+
+.brand{
+    color:white;
+    opacity: 0.88;
+    font-weight:bold;
+    font-size:x-large;
+    bottom:0.5rem;
+    right:0.5rem;
+    position:absolute;
+    display:block;
+}
+
+#timer{
+    color:white;
+    font-size:64pt;
+    display:block;
+    margin-top:0.5em;
+}
+
+ .face,.logo,.timer{
+     width: 25%;
+     height:30%;
+ }
+ .logo img{
+    max-height:72%;
+    max-width:80%;
+    margin-left:auto;
+    margin-right:auto;
+    position:relative;
+    display:block;
+    margin-top:1rem;
+ }
+ .panel{
+    box-shadow:0px 0px 30px rgba(0,0,0,1);
+    display:inline-block;
+    margin:25px;
+    position:relative;
+    background-color:#555;
+
+    clip-path: 
+    polygon(
+        0% 0%,                 /* top left */
+        0% 0%,                 /* top left */
+        100% 0%,    /* top right */
+        100% 0%,               /* top right */
+        100% calc(100% - 10px),  /* bottom right */
+        calc(100% - 10px) 100%,  /* bottom right */
+        10px 100%,               /* bottom left */
+        0 calc(100% - 10px)      /* bottom left */
+    );
+    vertical-align: bottom;
+ }
+
+ .chroma::before{
+    position:absolute;
+    top:10px;
+    left:10px;
+    right:10px;
+    bottom:3em;
+    background-color:#00ff00;
+    content:' ';
+ }
+
+
+ .rollwindow{
+     width:20%;
+     height:80%;
+     float:right;
+ }
+ .mapwindow{
+     width:55%;
+     height:60%;
+     float:right;
+ }
+</style>
+<script
+src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
+crossorigin="anonymous"></script>
+<script type="text/javascript">
+ $(document).ready(function(){
+    var url_string = window.location.href;
+    var url = new URL(url_string);
+    var faces = url.searchParams.get("faces");
+    var map = url.searchParams.get("map")>0?1:0;
+    var roll = url.searchParams.get("roll")>0?1:0;
+    var background = url.searchParams.get("background");
+    var timer = url.searchParams.get("timer");
+    var logo = url.searchParams.get("logo");
+    var conf = url.searchParams.get("conf");
+
+    $('body').css('background-image','url('+background+')');
+    if(map>0){
+        $('.mapwindow').show();
+    }else{
+        $('.mapwindow').hide();
+    }
+    if(roll>0){
+        $('.rollwindow').show();
+    }else{
+        $('.rollwindow').hide();
+    }
+
+    if(timer>0){
+        $('.timer').show();
+    }else{
+        $('.timer').hide();
+    }
+    for(var i=0;i<faces;i++){
+        if(i==1-map&&logo.length > 0){
+            $('body').append('<div class="panel logo"><span class="brand">Actual Play</span></div>');
+        }
+        var fill = '&nbsp;';
+        if(url.searchParams.has("title"+(i+1))){
+           fill = url.searchParams.get("title"+(i+1));
+        }
+        
+        $('body').append('<div class="chroma panel face"><span class="brand">'+fill+'</span></div>');
+    }
+    $('.face,.logo').css('width',25-((map+roll)*5)+"%");
+
+    if(parseInt(map)>0){
+        $('.face,.logo').css('height','22%');
+        $('.face,.logo').css('float','left');
+    }
+
+    if(parseInt(roll)<1){
+        $('.mapwindow').css('margin-right','10%');
+        $('.mapwindow').css('width','65%');
+    }
+    $('.logo').append('<img src="'+logo+'">');
+    if(conf){
+        $('.configure').hide();
+    }
+    $('.configure input').on("paste change click",function(){
+        var val = $(this).val();
+        if($(this).attr('type') == "checkbox"){
+                val = $(this).is(':checked')?1:0;
+            }
+        url.searchParams.set($(this).attr('id'),val);
+        url.searchParams.set('conf',true);
+        var urlstring = url.href;
+        $(".link").html('<a href="'+urlstring+'" >'+urlstring+'</a>');
+    });
+
+
+    var time=timer*60,r=document.getElementById('timer'),tmp=time;
+    console.log(time);
+    setInterval(function(){
+        var c=tmp--,m=(c/60)>>0,s=(c-m*60)+'';
+        if(c>0){
+        var t =''+m+':'+(s.length>1?'':'0')+s
+        ;
+        }else{
+            var t = "Soon...";
+        }
+        console.log(r.textContent);
+        $('.timer').html('<span id="timer">'+t+'</span>');
+    },1000);
+
+ });
+</script>
+</head>
+<body>
+    <div class="configure">
+    <label>Background URL:<input type="text" id="background"></label>
+    <label>Logo URL:<input type="text" id="logo"></label>
+    <label>Timer Minutes:<input type="number" id="timer"></label>
+    <label>Faces:<input type="number" id="faces"></label>
+    <label>Roll Window:<input type="checkbox" id="roll"></label>
+    <label>Map Window:<input type="checkbox" id="map"></label>
+    <span class="link"></span>
+    </div>
+    <div class="timer panel"><span id="timer">&nbsp;</span></div>
+    <div class="chroma panel rollwindow">&nbsp;</div>
+    <div class="chroma panel mapwindow">&nbsp;</div>
+</body>
+</html>
